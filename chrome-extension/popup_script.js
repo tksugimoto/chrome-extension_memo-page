@@ -163,14 +163,26 @@ const MemoList = {
 		li.appendChild(a);
 
 		this.container.appendChild(li);
+		return li;
 	}
 };
 
 tabMemo.getAll().then(memos => {
 	updateDownloadLink(memos);
-	memos.forEach(memo => {
-		MemoList.append(memo);
+	const list = memos.map(memo => {
+		const elem = MemoList.append(memo);
+		return {elem, memo};
 	});
+	const searchInput = document.getElementById("search");
+	searchInput.addEventListener("keyup", evt => {
+		const text = evt.target.value.toLowerCase();
+		list.forEach(({memo, elem}) => {
+			const targetText = memo.title + " " + memo.url;
+			elem.style.display = targetText.includes(text) ? "" : "none";
+		});
+	});
+	searchInput.style.display = "";
+	searchInput.focus();
 });
 
 function updateDownloadLink(memos) {
