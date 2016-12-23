@@ -14,17 +14,14 @@
 </head>
 <body>
 	<div class="function-buttons">
+		<a href="#" id="download" target="_blank" download="memo.json">メモ一覧をダウンロード</a>
+		<input type="button" value="このWindowのタブ全てを保存して閉じる" id="saveThisWindow">
 		<input type="button" value="このタブを保存して閉じる" id="save">
 	</div>
 
 	<h2>メモ一覧</h2>
-	<a href="#" id="download" target="_blank" download="memo.json">ダウンロード</a>
 	<input type="text" placeholder="検索" id="search" style="display: none">
 	<ol id="memo"></ol>
-
-	<h2>現在のウィンドウのタブ一覧</h2>
-	<input type="button" value="このWindowのタブ全てを保存して閉じる" id="saveThisWindow">
-	<ul id="nowTabs"></ul>
 	
 	<script src="popup_script.js"></script>
 </body>

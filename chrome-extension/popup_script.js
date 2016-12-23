@@ -92,12 +92,6 @@ function getTabs() {
 }
 
 getTabs().then(tabs => {
-	const container = document.getElementById("nowTabs");
-	tabs.forEach(tab => {
-		const li = document.createElement("li");
-		li.append(tab.title);
-		container.appendChild(li);
-	});
 	saveThisWindow.addEventListener("click", () => {
 		const promises = tabs.map(tab => {
 			const {title, url} = tab;
