@@ -1,0 +1,14 @@
+{
+	"name": "memo page",
+	"version": "0.1.0",
+	"manifest_version": 2,
+	"description": "あとで読むリスト",
+	"permissions": [
+		"tabs",
+		"storage"
+	],
+	"browser_action": {
+		"default_title": "あとで読むリスト",
+		"default_popup": "popup.html"
+	}
+}
