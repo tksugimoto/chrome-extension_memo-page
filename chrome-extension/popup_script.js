@@ -171,7 +171,7 @@ tabMemo.getAll().then(memos => {
 	searchInput.addEventListener("keyup", evt => {
 		const text = evt.target.value.toLowerCase();
 		list.forEach(({memo, elem}) => {
-			const targetText = memo.title + " " + memo.url;
+			const targetText = (memo.title + " " + memo.url).toLowerCase();
 			elem.style.display = targetText.includes(text) ? "" : "none";
 		});
 	});
