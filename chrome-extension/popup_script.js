@@ -16,7 +16,7 @@ class TabMemo {
 		});
 	}
 
-	add({title, url}) {
+	add({title, url, favIconUrl}) {
 		return new Promise(resolveResult => {
 			this._promise = this._promise.then(memos => {
 				if (!url) {
@@ -24,7 +24,7 @@ class TabMemo {
 					return memos;
 				} else {
 					const savedTime = Date.now();
-					const memo = {title, url, savedTime};
+					const memo = {title, url, favIconUrl, savedTime};
 					memos.push(memo);
 					return new Promise(resolve => {
 						chrome.storage.local.set({
@@ -72,8 +72,8 @@ document.getElementById("save").addEventListener("click", () => {
 		active: true
 	}, tabs => {
 		const tab = tabs[0];
-		const {title, url} = tab;
-		tabMemo.add({title, url}).then(ok => {
+		const {title, url, favIconUrl} = tab;
+		tabMemo.add({title, url, favIconUrl}).then(ok => {
 			if (ok) {
 				chrome.tabs.remove(tab.id);
 			}
@@ -94,8 +94,8 @@ function getTabs() {
 getTabs().then(tabs => {
 	saveThisWindow.addEventListener("click", () => {
 		const promises = tabs.map(tab => {
-			const {title, url} = tab;
-			return tabMemo.add({title, url}).then(ok => {
+			const {title, url, favIconUrl} = tab;
+			return tabMemo.add({title, url, favIconUrl}).then(ok => {
 				return ok ? tab.id : null;
 			});
 		});
@@ -148,6 +148,13 @@ const MemoList = {
 				return `${sep}0${num}`
 			});
 		li.append(date);
+
+		const favIcon = document.createElement("img");
+		favIcon.classList.add("favIcon");
+		if (memo.favIconUrl) {
+			favIcon.src = memo.favIconUrl;
+		}
+		li.appendChild(favIcon);
 
 		const a = document.createElement("a");
 		a.href = memo.url;
