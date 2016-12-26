@@ -2,11 +2,11 @@
 class TabMemo {
 	constructor(key = "default") {
 		this._key = key;
-		this.load();
+		this._promise = Promise.resolve();
 	}
 
-	load() {
-		this._promise = new Promise(resolve => {
+	_load() {
+		return new Promise(resolve => {
 			chrome.storage.local.get({
 				[this._key]: []
 			}, items => {
@@ -18,7 +18,9 @@ class TabMemo {
 
 	add({title, url, favIconUrl}) {
 		return new Promise(resolveResult => {
-			this._promise = this._promise.then(memos => {
+			this._promise = this._promise.then(() => {
+				return this._load();
+			}).then(memos => {
 				if (!url) {
 					resolveResult(false);
 					return memos;
@@ -40,14 +42,14 @@ class TabMemo {
 	}
 
 	getAll() {
-		return new Promise(resolveResult => {
-			this._promise.then(resolveResult);
-		});
+		return this._promise.then(this._load.bind(this));
 	}
 
 	remove({title, url}) {
 		return new Promise(resolveResult => {
-			this._promise = this._promise.then(memos => {
+			this._promise = this._promise.then(() => {
+				return this._load();
+			}).then(memos => {
 				memos = memos.filter(memo => {
 					return !(memo.title === title && memo.url === url);
 				});
