@@ -23,6 +23,16 @@
 		#memo > li:hover * {
 			background: khaki;
 		}
+		#memo a[href]:hover:after {
+			content: attr(href);
+			word-break: break-all;
+			color: black;
+			background: lightgray;
+			padding: 3px;
+			position: fixed;
+			bottom: 0;
+			left: 0;
+		}
 	</style>
 </head>
 <body>
