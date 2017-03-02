@@ -162,7 +162,6 @@ const MemoList = {
 		a.href = memo.url;
 		a.target = "_blank";
 		a.innerText = memo.title;
-		a.title = memo.url;
 		li.appendChild(a);
 
 		this.container.appendChild(li);
