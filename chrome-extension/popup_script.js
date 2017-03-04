@@ -1,5 +1,5 @@
 
-class TabMemo {
+class PageMemoStorage {
 	constructor(key = "default") {
 		this._key = key;
 		this._promise = Promise.resolve();
@@ -66,7 +66,7 @@ class TabMemo {
 	}
 }
 
-const tabMemo = new TabMemo();
+const PageMemos = new PageMemoStorage();
 
 document.getElementById("save").addEventListener("click", () => {
 	chrome.tabs.query({
@@ -75,7 +75,7 @@ document.getElementById("save").addEventListener("click", () => {
 	}, tabs => {
 		const tab = tabs[0];
 		const {title, url, favIconUrl} = tab;
-		tabMemo.add({title, url, favIconUrl}).then(ok => {
+		PageMemos.add({title, url, favIconUrl}).then(ok => {
 			if (ok) {
 				chrome.tabs.remove(tab.id);
 			}
@@ -97,7 +97,7 @@ getTabs().then(tabs => {
 	saveThisWindow.addEventListener("click", () => {
 		const promises = tabs.map(tab => {
 			const {title, url, favIconUrl} = tab;
-			return tabMemo.add({title, url, favIconUrl}).then(ok => {
+			return PageMemos.add({title, url, favIconUrl}).then(ok => {
 				return ok ? tab.id : null;
 			});
 		});
@@ -119,7 +119,7 @@ const MemoList = {
 		const button = document.createElement("button");
 		button.innerText = "開いて削除";
 		button.addEventListener("click", () => {
-			tabMemo.remove(memo).then(ok => {
+			PageMemos.remove(memo).then(ok => {
 				if (ok) {
 					chrome.tabs.create({
 						url: memo.url
@@ -133,7 +133,7 @@ const MemoList = {
 		delButton.innerText = "削除";
 		delButton.addEventListener("click", () => {
 			if (window.confirm("削除してよいですか？")) {
-				tabMemo.remove(memo).then(ok => {
+				PageMemos.remove(memo).then(ok => {
 					if (ok) {
 						this.container.removeChild(li)
 					}
@@ -169,7 +169,7 @@ const MemoList = {
 	}
 };
 
-tabMemo.getAll().then(memos => {
+PageMemos.getAll().then(memos => {
 	updateDownloadLink(memos);
 	const list = memos.map(memo => {
 		const elem = MemoList.append(memo);
