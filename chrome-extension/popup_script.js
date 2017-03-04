@@ -1,4 +1,36 @@
 
+class PageMemo {
+	constructor(data) {
+		if (!data) throw new Error("第1引数が必須です");
+		const requiredPropertyNames = ["title", "url"];
+		requiredPropertyNames.forEach(name => {
+			if (name in data) {
+				this[name] = data[name];
+			} else {
+				throw new Error(`${name}プロパティが必須です`);
+			}
+		});
+		const allowedPropertyNames = ["favIconUrl", "savedTime"];
+		allowedPropertyNames.forEach(name => {
+			if (name in data) {
+				this[name] = data[name];
+			}
+		});
+	}
+
+	withSavedTime(savedTime) {
+		this.savedTime = savedTime;
+		return this;
+	}
+
+	equals(target) {
+		if (!target) return false;
+		return ["title", "url"].every(key => {
+			return this[key] === target[key];
+		});
+	}
+}
+
 class PageMemoStorage {
 	constructor(key = "default") {
 		this._key = key;
@@ -16,17 +48,17 @@ class PageMemoStorage {
 		});
 	}
 
-	add({title, url, favIconUrl}) {
+	add(data) {
 		return new Promise(resolveResult => {
 			this._promise = this._promise.then(() => {
 				return this._load();
 			}).then(memos => {
-				if (!url) {
+				if (!data || !data.url) {
 					resolveResult(false);
 					return memos;
 				} else {
 					const savedTime = Date.now();
-					const memo = {title, url, favIconUrl, savedTime};
+					const memo = new PageMemo(data).withSavedTime(savedTime);
 					memos.push(memo);
 					return new Promise(resolve => {
 						chrome.storage.local.set({
@@ -45,13 +77,14 @@ class PageMemoStorage {
 		return this._promise.then(this._load.bind(this));
 	}
 
-	remove({title, url}) {
+	remove(data) {
 		return new Promise(resolveResult => {
 			this._promise = this._promise.then(() => {
 				return this._load();
 			}).then(memos => {
+				const targetMemo = new PageMemo(data);
 				memos = memos.filter(memo => {
-					return !(memo.title === title && memo.url === url);
+					return !targetMemo.equals(memo);
 				});
 				return new Promise(resolve => {
 					chrome.storage.local.set({
@@ -74,8 +107,7 @@ document.getElementById("save").addEventListener("click", () => {
 		active: true
 	}, tabs => {
 		const tab = tabs[0];
-		const {title, url, favIconUrl} = tab;
-		PageMemos.add({title, url, favIconUrl}).then(ok => {
+		PageMemos.add(tab).then(ok => {
 			if (ok) {
 				chrome.tabs.remove(tab.id);
 			}
@@ -96,8 +128,7 @@ function getTabs() {
 getTabs().then(tabs => {
 	saveThisWindow.addEventListener("click", () => {
 		const promises = tabs.map(tab => {
-			const {title, url, favIconUrl} = tab;
-			return PageMemos.add({title, url, favIconUrl}).then(ok => {
+			return PageMemos.add(tab).then(ok => {
 				return ok ? tab.id : null;
 			});
 		});
