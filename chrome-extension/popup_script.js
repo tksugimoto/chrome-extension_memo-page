@@ -1,5 +1,37 @@
 
-class TabMemo {
+class PageMemo {
+	constructor(data) {
+		if (!data) throw new Error("第1引数が必須です");
+		const requiredPropertyNames = ["title", "url"];
+		requiredPropertyNames.forEach(name => {
+			if (name in data) {
+				this[name] = data[name];
+			} else {
+				throw new Error(`${name}プロパティが必須です`);
+			}
+		});
+		const allowedPropertyNames = ["favIconUrl", "savedTime"];
+		allowedPropertyNames.forEach(name => {
+			if (name in data) {
+				this[name] = data[name];
+			}
+		});
+	}
+
+	withSavedTime(savedTime) {
+		this.savedTime = savedTime;
+		return this;
+	}
+
+	equals(target) {
+		if (!target) return false;
+		return ["title", "url"].every(key => {
+			return this[key] === target[key];
+		});
+	}
+}
+
+class PageMemoStorage {
 	constructor(key = "default") {
 		this._key = key;
 		this._promise = Promise.resolve();
@@ -16,17 +48,17 @@ class TabMemo {
 		});
 	}
 
-	add({title, url, favIconUrl}) {
+	add(data) {
 		return new Promise(resolveResult => {
 			this._promise = this._promise.then(() => {
 				return this._load();
 			}).then(memos => {
-				if (!url) {
+				if (!data || !data.url) {
 					resolveResult(false);
 					return memos;
 				} else {
 					const savedTime = Date.now();
-					const memo = {title, url, favIconUrl, savedTime};
+					const memo = new PageMemo(data).withSavedTime(savedTime);
 					memos.push(memo);
 					return new Promise(resolve => {
 						chrome.storage.local.set({
@@ -45,13 +77,14 @@ class TabMemo {
 		return this._promise.then(this._load.bind(this));
 	}
 
-	remove({title, url}) {
+	remove(data) {
 		return new Promise(resolveResult => {
 			this._promise = this._promise.then(() => {
 				return this._load();
 			}).then(memos => {
+				const targetMemo = new PageMemo(data);
 				memos = memos.filter(memo => {
-					return !(memo.title === title && memo.url === url);
+					return !targetMemo.equals(memo);
 				});
 				return new Promise(resolve => {
 					chrome.storage.local.set({
@@ -66,7 +99,7 @@ class TabMemo {
 	}
 }
 
-const tabMemo = new TabMemo();
+const PageMemos = new PageMemoStorage();
 
 document.getElementById("save").addEventListener("click", () => {
 	chrome.tabs.query({
@@ -74,8 +107,7 @@ document.getElementById("save").addEventListener("click", () => {
 		active: true
 	}, tabs => {
 		const tab = tabs[0];
-		const {title, url, favIconUrl} = tab;
-		tabMemo.add({title, url, favIconUrl}).then(ok => {
+		PageMemos.add(tab).then(ok => {
 			if (ok) {
 				chrome.tabs.remove(tab.id);
 			}
@@ -96,8 +128,7 @@ function getTabs() {
 getTabs().then(tabs => {
 	saveThisWindow.addEventListener("click", () => {
 		const promises = tabs.map(tab => {
-			const {title, url, favIconUrl} = tab;
-			return tabMemo.add({title, url, favIconUrl}).then(ok => {
+			return PageMemos.add(tab).then(ok => {
 				return ok ? tab.id : null;
 			});
 		});
@@ -111,7 +142,42 @@ getTabs().then(tabs => {
 	});
 });
 
-const MemoList = {
+
+
+const MemoView = {
+	setup: function (memos) {
+		// TODO: memosが削除されたらダウンロードされるjsonも変更する
+		this.updateDownloadLink(memos);
+		const list = memos.map(memo => {
+			const elem = MemoListView.append(memo);
+			return {elem, memo};
+		});
+		this.setupSearchBox(list);
+	},
+	setupSearchBox: function (list) {
+		const searchInput = document.getElementById("search");
+		searchInput.addEventListener("keyup", evt => {
+			const text = evt.target.value.toLowerCase();
+			list.forEach(({memo, elem}) => {
+				const targetText = (memo.title + " " + memo.url).toLowerCase();
+				elem.style.display = targetText.includes(text) ? "" : "none";
+			});
+		});
+		searchInput.style.display = "";
+		searchInput.focus();
+	},
+	updateDownloadLink: function (memos) {
+		const text = JSON.stringify(memos, null, "\t");
+		const blob = new Blob([
+			text
+		], {
+			type: "application/json"
+		});
+		document.getElementById("download").href = window.URL.createObjectURL(blob);
+	}
+};
+
+const MemoListView = {
 	container: document.getElementById("memo"),
 	append: function (memo) {
 		const li = document.createElement("li");
@@ -119,7 +185,7 @@ const MemoList = {
 		const button = document.createElement("button");
 		button.innerText = "開いて削除";
 		button.addEventListener("click", () => {
-			tabMemo.remove(memo).then(ok => {
+			PageMemos.remove(memo).then(ok => {
 				if (ok) {
 					chrome.tabs.create({
 						url: memo.url
@@ -133,7 +199,7 @@ const MemoList = {
 		delButton.innerText = "削除";
 		delButton.addEventListener("click", () => {
 			if (window.confirm("削除してよいですか？")) {
-				tabMemo.remove(memo).then(ok => {
+				PageMemos.remove(memo).then(ok => {
 					if (ok) {
 						this.container.removeChild(li)
 					}
@@ -169,30 +235,6 @@ const MemoList = {
 	}
 };
 
-tabMemo.getAll().then(memos => {
-	updateDownloadLink(memos);
-	const list = memos.map(memo => {
-		const elem = MemoList.append(memo);
-		return {elem, memo};
-	});
-	const searchInput = document.getElementById("search");
-	searchInput.addEventListener("keyup", evt => {
-		const text = evt.target.value.toLowerCase();
-		list.forEach(({memo, elem}) => {
-			const targetText = (memo.title + " " + memo.url).toLowerCase();
-			elem.style.display = targetText.includes(text) ? "" : "none";
-		});
-	});
-	searchInput.style.display = "";
-	searchInput.focus();
+PageMemos.getAll().then(memos => {
+	MemoView.setup(memos);
 });
-
-function updateDownloadLink(memos) {
-	const text = JSON.stringify(memos, null, "\t");
-	const blob = new Blob([
-		text
-	], {
-		type: "application/json"
-	});
-	document.getElementById("download").href = window.URL.createObjectURL(blob);
-}
