@@ -142,6 +142,41 @@ getTabs().then(tabs => {
 	});
 });
 
+
+
+const MemoView = {
+	setup: function (memos) {
+		// TODO: memosが削除されたらダウンロードされるjsonも変更する
+		this.updateDownloadLink(memos);
+		const list = memos.map(memo => {
+			const elem = MemoListView.append(memo);
+			return {elem, memo};
+		});
+		this.setupSearchBox(list);
+	},
+	setupSearchBox: function (list) {
+		const searchInput = document.getElementById("search");
+		searchInput.addEventListener("keyup", evt => {
+			const text = evt.target.value.toLowerCase();
+			list.forEach(({memo, elem}) => {
+				const targetText = (memo.title + " " + memo.url).toLowerCase();
+				elem.style.display = targetText.includes(text) ? "" : "none";
+			});
+		});
+		searchInput.style.display = "";
+		searchInput.focus();
+	},
+	updateDownloadLink: function (memos) {
+		const text = JSON.stringify(memos, null, "\t");
+		const blob = new Blob([
+			text
+		], {
+			type: "application/json"
+		});
+		document.getElementById("download").href = window.URL.createObjectURL(blob);
+	}
+};
+
 const MemoListView = {
 	container: document.getElementById("memo"),
 	append: function (memo) {
@@ -201,29 +236,5 @@ const MemoListView = {
 };
 
 PageMemos.getAll().then(memos => {
-	updateDownloadLink(memos);
-	const list = memos.map(memo => {
-		const elem = MemoListView.append(memo);
-		return {elem, memo};
-	});
-	const searchInput = document.getElementById("search");
-	searchInput.addEventListener("keyup", evt => {
-		const text = evt.target.value.toLowerCase();
-		list.forEach(({memo, elem}) => {
-			const targetText = (memo.title + " " + memo.url).toLowerCase();
-			elem.style.display = targetText.includes(text) ? "" : "none";
-		});
-	});
-	searchInput.style.display = "";
-	searchInput.focus();
+	MemoView.setup(memos);
 });
-
-function updateDownloadLink(memos) {
-	const text = JSON.stringify(memos, null, "\t");
-	const blob = new Blob([
-		text
-	], {
-		type: "application/json"
-	});
-	document.getElementById("download").href = window.URL.createObjectURL(blob);
-}
