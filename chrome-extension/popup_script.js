@@ -142,7 +142,7 @@ getTabs().then(tabs => {
 	});
 });
 
-const MemoList = {
+const MemoListView = {
 	container: document.getElementById("memo"),
 	append: function (memo) {
 		const li = document.createElement("li");
@@ -203,7 +203,7 @@ const MemoList = {
 PageMemos.getAll().then(memos => {
 	updateDownloadLink(memos);
 	const list = memos.map(memo => {
-		const elem = MemoList.append(memo);
+		const elem = MemoListView.append(memo);
 		return {elem, memo};
 	});
 	const searchInput = document.getElementById("search");
