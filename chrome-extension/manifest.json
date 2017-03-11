@@ -7,6 +7,14 @@
 		"tabs",
 		"storage"
 	],
+	"background": {
+		"persistent": false,
+		"scripts": [
+			"badgeUtil.js",
+			"PageMemoStorage.js",
+			"background.js"
+		]
+	},
 	"browser_action": {
 		"default_title": "あとで読むリスト",
 		"default_popup": "popup.html"
