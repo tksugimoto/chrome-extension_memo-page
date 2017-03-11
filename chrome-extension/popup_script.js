@@ -55,6 +55,7 @@ class PageMemoStorage {
 			}).then(memos => {
 				if (!data || !data.url) {
 					resolveResult({
+						memos,
 						success: false
 					});
 					return memos;
@@ -67,6 +68,7 @@ class PageMemoStorage {
 							[this._key]: memos
 						}, () => {
 							resolveResult({
+								memos,
 								success: true
 							});
 							resolve(memos);
@@ -95,6 +97,7 @@ class PageMemoStorage {
 						[this._key]: memos
 					}, () => {
 						resolveResult({
+							memos,
 							success: true
 						});
 						resolve(memos);
@@ -113,7 +116,8 @@ document.getElementById("save").addEventListener("click", () => {
 		active: true
 	}, tabs => {
 		const tab = tabs[0];
-		PageMemos.add(tab).then(({success}) => {
+		PageMemos.add(tab).then(({memos, success}) => {
+			badgeUtil.show(memos.length);
 			if (success) {
 				chrome.tabs.remove(tab.id);
 			}
@@ -134,7 +138,8 @@ function getTabs() {
 getTabs().then(tabs => {
 	saveThisWindow.addEventListener("click", () => {
 		const promises = tabs.map(tab => {
-			return PageMemos.add(tab).then(({success}) => {
+			return PageMemos.add(tab).then(({memos, success}) => {
+				badgeUtil.show(memos.length);
 				return success ? tab.id : null;
 			});
 		});
@@ -191,7 +196,8 @@ const MemoListView = {
 		const button = document.createElement("button");
 		button.innerText = "開いて削除";
 		button.addEventListener("click", () => {
-			PageMemos.remove(memo).then(({success}) => {
+			PageMemos.remove(memo).then(({memos, success}) => {
+				badgeUtil.show(memos.length);
 				if (success) {
 					chrome.tabs.create({
 						url: memo.url
@@ -205,7 +211,8 @@ const MemoListView = {
 		delButton.innerText = "削除";
 		delButton.addEventListener("click", () => {
 			if (window.confirm("削除してよいですか？")) {
-				PageMemos.remove(memo).then(({success}) => {
+				PageMemos.remove(memo).then(({memos, success}) => {
+					badgeUtil.show(memos.length);
 					if (success) {
 						this.container.removeChild(li)
 					}
@@ -242,5 +249,6 @@ const MemoListView = {
 };
 
 PageMemos.getAll().then(memos => {
+	badgeUtil.show(memos.length);
 	MemoView.setup(memos);
 });
