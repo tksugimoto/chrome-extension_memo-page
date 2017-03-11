@@ -1,104 +1,4 @@
 
-class PageMemo {
-	constructor(data) {
-		if (!data) throw new Error("第1引数が必須です");
-		const requiredPropertyNames = ["title", "url"];
-		requiredPropertyNames.forEach(name => {
-			if (name in data) {
-				this[name] = data[name];
-			} else {
-				throw new Error(`${name}プロパティが必須です`);
-			}
-		});
-		const allowedPropertyNames = ["favIconUrl", "savedTime"];
-		allowedPropertyNames.forEach(name => {
-			if (name in data) {
-				this[name] = data[name];
-			}
-		});
-	}
-
-	withSavedTime(savedTime) {
-		this.savedTime = savedTime;
-		return this;
-	}
-
-	equals(target) {
-		if (!target) return false;
-		return ["title", "url"].every(key => {
-			return this[key] === target[key];
-		});
-	}
-}
-
-class PageMemoStorage {
-	constructor(key = "default") {
-		this._key = key;
-		this._promise = Promise.resolve();
-	}
-
-	_load() {
-		return new Promise(resolve => {
-			chrome.storage.local.get({
-				[this._key]: []
-			}, items => {
-				const memos = items[this._key];
-				resolve(memos);
-			});
-		});
-	}
-
-	add(data) {
-		return new Promise(resolveResult => {
-			this._promise = this._promise.then(() => {
-				return this._load();
-			}).then(memos => {
-				if (!data || !data.url) {
-					resolveResult(false);
-					return memos;
-				} else {
-					const savedTime = Date.now();
-					const memo = new PageMemo(data).withSavedTime(savedTime);
-					memos.push(memo);
-					return new Promise(resolve => {
-						chrome.storage.local.set({
-							[this._key]: memos
-						}, () => {
-							resolveResult(true);
-							resolve(memos);
-						});
-					});
-				}
-			});
-		});
-	}
-
-	getAll() {
-		return this._promise.then(this._load.bind(this));
-	}
-
-	remove(data) {
-		return new Promise(resolveResult => {
-			this._promise = this._promise.then(() => {
-				return this._load();
-			}).then(memos => {
-				const targetMemo = new PageMemo(data);
-				memos = memos.filter(memo => {
-					return !targetMemo.equals(memo);
-				});
-				return new Promise(resolve => {
-					chrome.storage.local.set({
-						[this._key]: memos
-					}, () => {
-						resolveResult(true);
-						resolve(memos);
-					});
-				});
-			});
-		});
-	}
-}
-
 const PageMemos = new PageMemoStorage();
 
 document.getElementById("save").addEventListener("click", () => {
@@ -107,8 +7,9 @@ document.getElementById("save").addEventListener("click", () => {
 		active: true
 	}, tabs => {
 		const tab = tabs[0];
-		PageMemos.add(tab).then(ok => {
-			if (ok) {
+		PageMemos.add(tab).then(({memos, success}) => {
+			badgeUtil.show(memos.length);
+			if (success) {
 				chrome.tabs.remove(tab.id);
 			}
 		});
@@ -128,8 +29,9 @@ function getTabs() {
 getTabs().then(tabs => {
 	saveThisWindow.addEventListener("click", () => {
 		const promises = tabs.map(tab => {
-			return PageMemos.add(tab).then(ok => {
-				return ok ? tab.id : null;
+			return PageMemos.add(tab).then(({memos, success}) => {
+				badgeUtil.show(memos.length);
+				return success ? tab.id : null;
 			});
 		});
 		Promise.all(promises).then(tabIds => {
@@ -185,8 +87,9 @@ const MemoListView = {
 		const button = document.createElement("button");
 		button.innerText = "開いて削除";
 		button.addEventListener("click", () => {
-			PageMemos.remove(memo).then(ok => {
-				if (ok) {
+			PageMemos.remove(memo).then(({memos, success}) => {
+				badgeUtil.show(memos.length);
+				if (success) {
 					chrome.tabs.create({
 						url: memo.url
 					});
@@ -199,8 +102,9 @@ const MemoListView = {
 		delButton.innerText = "削除";
 		delButton.addEventListener("click", () => {
 			if (window.confirm("削除してよいですか？")) {
-				PageMemos.remove(memo).then(ok => {
-					if (ok) {
+				PageMemos.remove(memo).then(({memos, success}) => {
+					badgeUtil.show(memos.length);
+					if (success) {
 						this.container.removeChild(li)
 					}
 				});
@@ -236,5 +140,6 @@ const MemoListView = {
 };
 
 PageMemos.getAll().then(memos => {
+	badgeUtil.show(memos.length);
 	MemoView.setup(memos);
 });
