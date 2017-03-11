@@ -54,7 +54,9 @@ class PageMemoStorage {
 				return this._load();
 			}).then(memos => {
 				if (!data || !data.url) {
-					resolveResult(false);
+					resolveResult({
+						success: false
+					});
 					return memos;
 				} else {
 					const savedTime = Date.now();
@@ -64,7 +66,9 @@ class PageMemoStorage {
 						chrome.storage.local.set({
 							[this._key]: memos
 						}, () => {
-							resolveResult(true);
+							resolveResult({
+								success: true
+							});
 							resolve(memos);
 						});
 					});
@@ -90,7 +94,9 @@ class PageMemoStorage {
 					chrome.storage.local.set({
 						[this._key]: memos
 					}, () => {
-						resolveResult(true);
+						resolveResult({
+							success: true
+						});
 						resolve(memos);
 					});
 				});
@@ -107,8 +113,8 @@ document.getElementById("save").addEventListener("click", () => {
 		active: true
 	}, tabs => {
 		const tab = tabs[0];
-		PageMemos.add(tab).then(ok => {
-			if (ok) {
+		PageMemos.add(tab).then(({success}) => {
+			if (success) {
 				chrome.tabs.remove(tab.id);
 			}
 		});
@@ -128,8 +134,8 @@ function getTabs() {
 getTabs().then(tabs => {
 	saveThisWindow.addEventListener("click", () => {
 		const promises = tabs.map(tab => {
-			return PageMemos.add(tab).then(ok => {
-				return ok ? tab.id : null;
+			return PageMemos.add(tab).then(({success}) => {
+				return success ? tab.id : null;
 			});
 		});
 		Promise.all(promises).then(tabIds => {
@@ -185,8 +191,8 @@ const MemoListView = {
 		const button = document.createElement("button");
 		button.innerText = "開いて削除";
 		button.addEventListener("click", () => {
-			PageMemos.remove(memo).then(ok => {
-				if (ok) {
+			PageMemos.remove(memo).then(({success}) => {
+				if (success) {
 					chrome.tabs.create({
 						url: memo.url
 					});
@@ -199,8 +205,8 @@ const MemoListView = {
 		delButton.innerText = "削除";
 		delButton.addEventListener("click", () => {
 			if (window.confirm("削除してよいですか？")) {
-				PageMemos.remove(memo).then(ok => {
-					if (ok) {
+				PageMemos.remove(memo).then(({success}) => {
+					if (success) {
 						this.container.removeChild(li)
 					}
 				});
