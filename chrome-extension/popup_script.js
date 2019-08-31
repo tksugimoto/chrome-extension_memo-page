@@ -1,3 +1,5 @@
+import badgeUtil from '/badgeUtil.js';
+import PageMemoStorage from '/PageMemoStorage.js';
 
 const PageMemos = new PageMemoStorage();
 

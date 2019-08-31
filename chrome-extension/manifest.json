@@ -9,11 +9,7 @@
 	],
 	"background": {
 		"persistent": false,
-		"scripts": [
-			"badgeUtil.js",
-			"PageMemoStorage.js",
-			"background.js"
-		]
+		"page": "background.html"
 	},
 	"browser_action": {
 		"default_title": "あとで読むリスト",

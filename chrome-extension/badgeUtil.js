@@ -6,3 +6,5 @@ const badgeUtil = {
 		});
 	},
 };
+
+export default badgeUtil;
