@@ -40,7 +40,7 @@ class PageMemoStorage {
 	_load() {
 		return new Promise(resolve => {
 			chrome.storage.local.get({
-				[this._key]: []
+				[this._key]: [],
 			}, items => {
 				const memos = items[this._key];
 				resolve(memos);
@@ -56,7 +56,7 @@ class PageMemoStorage {
 				if (!data || !data.url) {
 					resolveResult({
 						memos,
-						success: false
+						success: false,
 					});
 					return memos;
 				} else {
@@ -65,11 +65,11 @@ class PageMemoStorage {
 					memos.push(memo);
 					return new Promise(resolve => {
 						chrome.storage.local.set({
-							[this._key]: memos
+							[this._key]: memos,
 						}, () => {
 							resolveResult({
 								memos,
-								success: true
+								success: true,
 							});
 							resolve(memos);
 						});
@@ -94,11 +94,11 @@ class PageMemoStorage {
 				});
 				return new Promise(resolve => {
 					chrome.storage.local.set({
-						[this._key]: memos
+						[this._key]: memos,
 					}, () => {
 						resolveResult({
 							memos,
-							success: true
+							success: true,
 						});
 						resolve(memos);
 					});

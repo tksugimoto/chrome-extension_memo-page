@@ -4,7 +4,7 @@ const PageMemos = new PageMemoStorage();
 document.getElementById("save").addEventListener("click", () => {
 	chrome.tabs.query({
 		currentWindow: true,
-		active: true
+		active: true,
 	}, tabs => {
 		const tab = tabs[0];
 		PageMemos.add(tab).then(({memos, success}) => {
@@ -18,8 +18,8 @@ document.getElementById("save").addEventListener("click", () => {
 
 function getTabs() {
 	return new Promise(resolve => {
-		chrome.windows.getCurrent({	
-			populate: true
+		chrome.windows.getCurrent({
+			populate: true,
 		}, ({tabs}) => {
 			resolve(tabs);
 		});
@@ -71,12 +71,12 @@ const MemoView = {
 	updateDownloadLink: function (memos) {
 		const text = JSON.stringify(memos, null, "\t");
 		const blob = new Blob([
-			text
+			text,
 		], {
-			type: "application/json"
+			type: "application/json",
 		});
 		document.getElementById("download").href = window.URL.createObjectURL(blob);
-	}
+	},
 };
 
 const MemoListView = {
@@ -91,7 +91,7 @@ const MemoListView = {
 				badgeUtil.show(memos.length);
 				if (success) {
 					chrome.tabs.create({
-						url: memo.url
+						url: memo.url,
 					});
 				}
 			});
@@ -136,7 +136,7 @@ const MemoListView = {
 
 		this.container.appendChild(li);
 		return li;
-	}
+	},
 };
 
 PageMemos.getAll().then(memos => {
