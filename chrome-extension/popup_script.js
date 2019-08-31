@@ -40,7 +40,7 @@ getTabs().then(tabs => {
 					chrome.tabs.remove(tabId);
 				}
 			});
-		})
+		});
 	});
 });
 
@@ -105,7 +105,7 @@ const MemoListView = {
 				PageMemos.remove(memo).then(({memos, success}) => {
 					badgeUtil.show(memos.length);
 					if (success) {
-						this.container.removeChild(li)
+						this.container.removeChild(li);
 					}
 				});
 			}
@@ -117,7 +117,7 @@ const MemoListView = {
 			.replace(/:\d+$/, '')
 			.replace(/([/ :])(\d)(?!\d)/g, (match, sep, num) => {
 				// 数字が1桁しかない場合は2桁にする
-				return `${sep}0${num}`
+				return `${sep}0${num}`;
 			});
 		li.append(date);
 
