@@ -5,7 +5,7 @@
 	"minimum_chrome_version": "61",
 	"description": "あとで読むリスト",
 	"permissions": [
-		"tabs",
+		"activeTab",
 		"storage"
 	],
 	"background": {
