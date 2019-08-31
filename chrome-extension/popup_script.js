@@ -47,7 +47,7 @@ getTabs().then(tabs => {
 
 
 const MemoView = {
-	setup: function (memos) {
+	setup (memos) {
 		// TODO: memosが削除されたらダウンロードされるjsonも変更する
 		this.updateDownloadLink(memos);
 		const list = memos.map(memo => {
@@ -56,7 +56,7 @@ const MemoView = {
 		});
 		this.setupSearchBox(list);
 	},
-	setupSearchBox: function (list) {
+	setupSearchBox (list) {
 		const searchInput = document.getElementById('search');
 		searchInput.addEventListener('keyup', evt => {
 			const text = evt.target.value.toLowerCase();
@@ -68,7 +68,7 @@ const MemoView = {
 		searchInput.style.display = '';
 		searchInput.focus();
 	},
-	updateDownloadLink: function (memos) {
+	updateDownloadLink (memos) {
 		const text = JSON.stringify(memos, null, '\t');
 		const blob = new Blob([
 			text,
@@ -81,7 +81,7 @@ const MemoView = {
 
 const MemoListView = {
 	container: document.getElementById('memo'),
-	append: function (memo) {
+	append (memo) {
 		const li = document.createElement('li');
 
 		const button = document.createElement('button');
