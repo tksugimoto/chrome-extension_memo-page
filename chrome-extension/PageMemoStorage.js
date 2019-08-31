@@ -1,8 +1,8 @@
 
 class PageMemo {
 	constructor(data) {
-		if (!data) throw new Error("第1引数が必須です");
-		const requiredPropertyNames = ["title", "url"];
+		if (!data) throw new Error('第1引数が必須です');
+		const requiredPropertyNames = ['title', 'url'];
 		requiredPropertyNames.forEach(name => {
 			if (name in data) {
 				this[name] = data[name];
@@ -10,7 +10,7 @@ class PageMemo {
 				throw new Error(`${name}プロパティが必須です`);
 			}
 		});
-		const allowedPropertyNames = ["favIconUrl", "savedTime"];
+		const allowedPropertyNames = ['favIconUrl', 'savedTime'];
 		allowedPropertyNames.forEach(name => {
 			if (name in data) {
 				this[name] = data[name];
@@ -25,14 +25,14 @@ class PageMemo {
 
 	equals(target) {
 		if (!target) return false;
-		return ["title", "url"].every(key => {
+		return ['title', 'url'].every(key => {
 			return this[key] === target[key];
 		});
 	}
 }
 
 class PageMemoStorage {
-	constructor(key = "default") {
+	constructor(key = 'default') {
 		this._key = key;
 		this._promise = Promise.resolve();
 	}
@@ -40,7 +40,7 @@ class PageMemoStorage {
 	_load() {
 		return new Promise(resolve => {
 			chrome.storage.local.get({
-				[this._key]: []
+				[this._key]: [],
 			}, items => {
 				const memos = items[this._key];
 				resolve(memos);
@@ -56,7 +56,7 @@ class PageMemoStorage {
 				if (!data || !data.url) {
 					resolveResult({
 						memos,
-						success: false
+						success: false,
 					});
 					return memos;
 				} else {
@@ -65,11 +65,11 @@ class PageMemoStorage {
 					memos.push(memo);
 					return new Promise(resolve => {
 						chrome.storage.local.set({
-							[this._key]: memos
+							[this._key]: memos,
 						}, () => {
 							resolveResult({
 								memos,
-								success: true
+								success: true,
 							});
 							resolve(memos);
 						});
@@ -94,11 +94,11 @@ class PageMemoStorage {
 				});
 				return new Promise(resolve => {
 					chrome.storage.local.set({
-						[this._key]: memos
+						[this._key]: memos,
 					}, () => {
 						resolveResult({
 							memos,
-							success: true
+							success: true,
 						});
 						resolve(memos);
 					});
