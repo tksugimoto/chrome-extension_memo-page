@@ -1,8 +1,8 @@
 
 class PageMemo {
 	constructor(data) {
-		if (!data) throw new Error("第1引数が必須です");
-		const requiredPropertyNames = ["title", "url"];
+		if (!data) throw new Error('第1引数が必須です');
+		const requiredPropertyNames = ['title', 'url'];
 		requiredPropertyNames.forEach(name => {
 			if (name in data) {
 				this[name] = data[name];
@@ -10,7 +10,7 @@ class PageMemo {
 				throw new Error(`${name}プロパティが必須です`);
 			}
 		});
-		const allowedPropertyNames = ["favIconUrl", "savedTime"];
+		const allowedPropertyNames = ['favIconUrl', 'savedTime'];
 		allowedPropertyNames.forEach(name => {
 			if (name in data) {
 				this[name] = data[name];
@@ -25,14 +25,14 @@ class PageMemo {
 
 	equals(target) {
 		if (!target) return false;
-		return ["title", "url"].every(key => {
+		return ['title', 'url'].every(key => {
 			return this[key] === target[key];
 		});
 	}
 }
 
 class PageMemoStorage {
-	constructor(key = "default") {
+	constructor(key = 'default') {
 		this._key = key;
 		this._promise = Promise.resolve();
 	}
