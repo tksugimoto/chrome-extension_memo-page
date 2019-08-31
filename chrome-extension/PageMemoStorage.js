@@ -107,3 +107,5 @@ class PageMemoStorage {
 		});
 	}
 }
+
+export default PageMemoStorage;
