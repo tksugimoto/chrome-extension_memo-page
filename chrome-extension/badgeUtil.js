@@ -1,7 +1,7 @@
 
 const badgeUtil = {
 	show: memoCount => {
-		chrome.browserAction.setBadgeText({
+		chrome.action.setBadgeText({
 			text: String(memoCount),
 		});
 	},
